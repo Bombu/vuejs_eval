@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Evaluation</title>
+</head>
+<body>
+
+<div id="app">
+    <table>
+        <tr>
+            <td>Id</td>
+            <td>Désignation</td>
+            <td>Qte</td>
+            <td>Pu Ht</td>
+            <td>Tva</td>
+            <td>P Ht</td>
+            <td>P Ttc</td>
+        </tr>
+        <tr v-for="(item,i) in facture" :key="i">
+            <td> <a>{{facture[i].id}}</a> </td>
+            <td> <input type="text" v-model="facture[i].designation"> </td>
+            <td> <input type="number" @change="prix_ht(i)" v-model="facture[i].qte"> </td>
+            <td> <input type="text" @change="prix_ht(i)" v-model="facture[i].pu_ht"> </td>
+            <td> <input type="number" @change="prix_ttc(i)" v-model="facture[i].tva"> </td>
+            <td> <a>{{facture[i].p_ht}} €</a></td>
+            <td> <a>{{facture[i].p_ttc}} €</a></td>
+            <td> <button v-on:click="deleteEvent(i)">X</button> </td>
+
+        </tr>
+    </table>
+
+    <p>Total HT : {{totalht}}</p>
+    <p>Total HT : {{totalttc}}</p>
+
+    <button class='btn-primary' @click='pushArray'>Ajouter une ligne</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript">
+
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            facture: [
+                {
+                    id : 1,
+                    designation : '',
+                    qte : '0',
+                    pu_ht : '0',
+                    tva : '0',
+                    p_ht : '0',
+                    p_ttc : '0'
+                }
+            ]
+        },
+
+        methods: {
+            pushArray: function () {
+                console.log(this.facture);
+                let id = this.facture[this.facture.length - 1].id + 1;
+                this.facture.push({
+                    id: id,
+                    designation: '',
+                    qte: '0',
+                    pu_ht: '0',
+                    tva: '0',
+                    p_ht: '0',
+                    p_ttc: '0'
+                });
+            },
+
+            deleteEvent: function(i) {
+                if(this.facture.length > 1) {
+                    this.facture.splice(i, 1);
+                }
+                else{
+                    this.facture[i].designation = '';
+                    this.facture[i].qte = '0';
+                    this.facture[i].pu_ht = '0';
+                    this.facture[i].tva = '0';
+                    this.facture[i].p_ht = '0';
+                    this.facture[i].p_ttc = '0';
+                }
+            },
+
+            prix_ht: function(i) {
+                this.facture[i].p_ht = this.facture[i].qte * this.facture[i].pu_ht;
+                this.prix_ttc(i);
+            },
+
+            prix_ttc: function(i) {
+                this.facture[i].p_ttc = this.facture[i].p_ht + (this.facture[i].p_ht * (this.facture[i].tva/100));
+            }
+        },
+
+        computed: {
+            totalht:{
+                get(){
+                    let total =0;
+                    for(i=0; i< this.facture.length; i++){
+                        total += parseFloat(this.facture[i].p_ht);
+                    }
+                    return total;
+                }
+            },
+
+            totalttc:{
+                get(){
+                    let total =0;
+                    for(i=0; i< this.facture.length; i++){
+                        total += parseFloat(this.facture[i].p_ttc);
+                    }
+                    return total;
+                }
+            }
+        },
+
+        mounted(){
+            if(localStorage.getItem('facture') == null){
+                localStorage.setItem('facture', []);
+            }
+            this.facture = JSON.parse(localStorage.getItem('facture'));
+        },
+
+        watch: {
+            facture: {
+                handler: function() {
+                    localStorage.setItem("facture", JSON.stringify(this.facture));
+                },
+                deep : true
+            }
+        }
+    });
+</script>
+</body>
+</html>
